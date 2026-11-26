@@ -13,8 +13,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Place Workflow Into .github/workflows
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path ".github/workflows" | Out-Null
+          if (Test-Path "build-windows.yml") {
+            Copy-Item -Path "build-windows.yml" -Destination ".github/workflows/build-windows.yml" -Force
+          }
+
+      - name: Setup MSBuild / Visual Studio Environment
+        uses: microsoft/setup-msbuild@v2
+
       - name: Configure CMake
-        run: cmake -B build -G "Visual Studio 17 2022" -A x64
+        run: cmake -B build -A x64
 
       - name: Build VST3 and Standalone (Release)
         run: cmake --build build --config Release --target ATELIER_VST3 ATELIER_Standalone
