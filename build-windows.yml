@@ -1,6 +1,6 @@
 name: Build ATELIER Windows VST3
 
-on:
+"on":
   workflow_dispatch:
   push:
     branches: [ main, master ]
@@ -21,11 +21,14 @@ jobs:
             Copy-Item -Path "build-windows.yml" -Destination ".github/workflows/build-windows.yml" -Force
           }
 
-      - name: Configure CMake
-        run: cmake -B build -G "Visual Studio 17 2022" -A x64
+      - name: Setup MSBuild / Visual Studio Environment
+        uses: microsoft/setup-msbuild@v2
 
-      - name: Build VST3 and Standalone (Release)
-        run: cmake --build build --config Release --target ATELIER_VST3 ATELIER_Standalone
+      - name: Configure CMake
+        run: cmake -B build -A x64
+
+      - name: Build VST3 (Release)
+        run: cmake --build build --config Release --target ATELIER_VST3
 
       - name: Rename VST3 with Version Tag
         shell: pwsh

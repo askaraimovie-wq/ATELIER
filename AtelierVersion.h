@@ -9,7 +9,6 @@ struct AtelierVersion
 
     static constexpr const char* kUnlockPasscode = "N6ATELIER";
 
-    // Last digit (patch) rolls 0..9 -> 0 and increments minor; minor rolls 0..9 -> 0 and increments major
     void incrementRollover()
     {
         ++patch;

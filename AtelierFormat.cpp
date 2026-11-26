@@ -1,11 +1,12 @@
 #include "AtelierFormat.h"
+#include <cstring>
 
 namespace
 {
     void xorScramble(std::vector<uint8_t>& data)
     {
         for (size_t i = 0; i < data.size(); ++i)
-            data[i] = static_cast<uint8_t>(data[i] ^ static_cast<uint8_t>(AtelierNmsArchive::kMaskByte + (i & 0x3F)));
+            data[i] = static_cast<uint8_t>(data[i] ^ static_cast<uint8_t>(AtelierNmsArchive::kMaskByte + (i & 0x3Fu)));
     }
 }
 
@@ -61,18 +62,20 @@ bool AtelierNmsArchive::saveToFile(const juce::File& targetFile,
 
     root->setProperty("groups", groupArr);
     const juce::String jsonText = juce::JSON::toString(juce::var(root), true);
-    const juce::MemoryBlock rawJson(jsonText.toUTF8(), jsonText.getNumBytesAsGNUStrLength());
+    const juce::CharPointer_UTF8 utf8Ptr = jsonText.toUTF8();
+    const size_t utf8Bytes = jsonText.getNumBytesAsUTF8();
 
     juce::MemoryOutputStream compressedStream;
     {
         juce::GZIPCompressorOutputStream gz(compressedStream, 9);
-        gz.write(rawJson.getData(), rawJson.getSize());
+        gz.write(utf8Ptr.getAddress(), utf8Bytes);
         gz.flush();
     }
 
-    std::vector<uint8_t> finalBytes(compressedStream.getSize());
-    if (!finalBytes.empty())
-        std::memcpy(finalBytes.data(), compressedStream.getData(), finalBytes.size());
+    const size_t compSize = compressedStream.getDataSize();
+    std::vector<uint8_t> finalBytes(compSize);
+    if (compSize > 0 && compressedStream.getData() != nullptr)
+        std::memcpy(finalBytes.data(), compressedStream.getData(), compSize);
     xorScramble(finalBytes);
 
     targetFile.deleteFile();
@@ -124,7 +127,7 @@ bool AtelierNmsArchive::loadFromFile(const juce::File& sourceFile,
     }
 
     std::vector<uint8_t> scrambled(static_cast<size_t>(byteLen));
-    in.read(scrambled.data(), byteLen);
+    in.read(scrambled.data(), static_cast<size_t>(byteLen));
     xorScramble(scrambled);
 
     juce::MemoryInputStream gzIn(scrambled.data(), scrambled.size(), false);
@@ -177,7 +180,7 @@ bool AtelierNmsArchive::loadFromFile(const juce::File& sourceFile,
                     if (mb.fromBase64Encoding(sVar.getProperty("payloadB64", "").toString()))
                     {
                         entry.encodedAudioData.resize(mb.getSize());
-                        if (!entry.encodedAudioData.empty())
+                        if (!entry.encodedAudioData.empty() && mb.getData() != nullptr)
                             std::memcpy(entry.encodedAudioData.data(), mb.getData(), mb.getSize());
                         xorScramble(entry.encodedAudioData);
                     }

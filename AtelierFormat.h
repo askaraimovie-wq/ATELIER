@@ -35,16 +35,14 @@ struct NmsGroupData
 class AtelierNmsArchive
 {
 public:
-    static constexpr uint32_t kMagic = 0x4E4D5331; // "NMS1"
-    static constexpr uint8_t kMaskByte = 0x5A;
+    static constexpr uint32_t kMagic = 0x4E4D5331u;
+    static constexpr uint8_t kMaskByte = 0x5Au;
 
-    // Writes compressed/protected .nms container (prevents direct raw WAV extraction)
     static bool saveToFile(const juce::File& targetFile,
                            const juce::String& libraryCategory,
                            const std::array<NmsGroupData, 12>& groups,
                            juce::String& errorOut);
 
-    // Reads metadata & protected sample blocks from .nms container
     static bool loadFromFile(const juce::File& sourceFile,
                            juce::String& libraryCategoryOut,
                            std::array<NmsGroupData, 12>& groupsOut,

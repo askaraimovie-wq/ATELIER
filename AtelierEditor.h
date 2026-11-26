@@ -29,10 +29,10 @@ private:
 
     AtelierAudioProcessor& proc;
     bool settingsDrawerOpen = false;
-    int visibleArticulationCount = 1; // Auto-adjusts 1..12
+    int visibleArticulationCount = 1;
     int draggingKeymapNote = -1;
-    int keymapLowNote = 48;  // C3
-    int keymapHighNote = 53; // F3
+    int keymapLowNote = 48;
+    int keymapHighNote = 53;
     float adsrAttackPt = 0.15f;
     float adsrReleasePt = 0.35f;
 

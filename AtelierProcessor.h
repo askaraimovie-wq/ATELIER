@@ -42,13 +42,12 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
-    // UI & Engine state
     AtelierVersion versionInfo;
-    AtelierPage currentPage = AtelierPage::Main; // Always starts on MAIN
-    bool sourceUnlocked = true;                 // Can be toggled/locked via N6 passcode
-    int activeThemeIndex = 0;                   // 0 = Paper Sketch (Default), 1..9 = other themes
-    float uiScaleFactor = 1.0f;                 // Adjustable UI scale / size
-    bool extendedCanvas = false;                // Optional right/bottom expansion for bigger controls
+    AtelierPage currentPage = AtelierPage::Main;
+    bool sourceUnlocked = true;
+    int activeThemeIndex = 0;
+    float uiScaleFactor = 1.0f;
+    bool extendedCanvas = false;
 
     juce::String libraryRootPath;
     juce::String activePresetName = "Init Atelier";
