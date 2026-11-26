@@ -1,5 +1,6 @@
 #include "AtelierEditor.h"
 #include <cstdint>
+#include <cstdlib>
 #include <cmath>
 
 namespace
@@ -30,9 +31,10 @@ namespace
 AtelierAudioProcessorEditor::AtelierAudioProcessorEditor(AtelierAudioProcessor& p)
     : AudioProcessorEditor(&p), proc(p)
 {
-    const int baseSize = static_cast<int>(640.0f * proc.uiScaleFactor);
-    const int width = proc.extendedCanvas ? static_cast<int>(baseSize * 1.25f) : baseSize;
-    const int height = proc.extendedCanvas ? static_cast<int>(baseSize * 1.12f) : baseSize;
+    const float scaledBase = 640.0f * proc.uiScaleFactor;
+    const int baseSize = static_cast<int>(scaledBase);
+    const int width = proc.extendedCanvas ? static_cast<int>(scaledBase * 1.25f) : baseSize;
+    const int height = proc.extendedCanvas ? static_cast<int>(scaledBase * 1.12f) : baseSize;
     setSize(width, height);
     startTimerHz(20);
 }
@@ -89,8 +91,10 @@ void AtelierAudioProcessorEditor::drawBackgroundSketch(juce::Graphics& g, juce::
 
     for (int p = -4; p <= 4; ++p)
     {
-        const float px = cx + static_cast<float>(p) * 44.0f;
-        const float py = cy - 45.0f + static_cast<float>(std::abs(p)) * 6.0f;
+        const float pf = static_cast<float>(p);
+        const float absPf = static_cast<float>(std::abs(p));
+        const float px = cx + pf * 44.0f;
+        const float py = cy - 45.0f + absPf * 6.0f;
         g.drawEllipse(px - 6.0f, py - 18.0f, 12.0f, 12.0f, 1.1f);
         g.drawLine(px, py - 6.0f, px, py + 14.0f, 1.1f);
         g.drawLine(px - 10.0f, py + 2.0f, px + 14.0f, py - 4.0f, 1.0f);
@@ -111,7 +115,7 @@ void AtelierAudioProcessorEditor::drawHeader(juce::Graphics& g, juce::Rectangle<
     g.setColour(theme.panel);
     g.fillRect(n6LogoBounds);
     g.setColour(theme.ink);
-    g.drawRect(n6LogoBounds, 1.5f);
+    g.drawRect(n6LogoBounds, 2);
     g.drawLine(static_cast<float>(n6LogoBounds.getX()), static_cast<float>(n6LogoBounds.getY() + 6),
                static_cast<float>(n6LogoBounds.getCentreX()), static_cast<float>(n6LogoBounds.getY() - 2), 1.4f);
     g.drawLine(static_cast<float>(n6LogoBounds.getCentreX()), static_cast<float>(n6LogoBounds.getY() - 2),
@@ -130,7 +134,7 @@ void AtelierAudioProcessorEditor::drawHeader(juce::Graphics& g, juce::Rectangle<
         g.setColour(active ? theme.accent : theme.panel);
         g.fillRect(r);
         g.setColour(active ? juce::Colours::white : theme.ink);
-        g.drawRect(r.toFloat(), 1.2f);
+        g.drawRect(r, 1);
         g.setFont(juce::Font(11.0f, juce::Font::bold));
         g.drawText(label, r, juce::Justification::centred);
     };
@@ -209,7 +213,7 @@ void AtelierAudioProcessorEditor::drawMainPage(juce::Graphics& g, juce::Rectangl
         g.setColour(isActive ? theme.accent.withAlpha(0.9f) : theme.panel.withAlpha(0.85f));
         g.fillRect(box);
         g.setColour(theme.ink);
-        g.drawRect(box.toFloat(), isActive ? 2.0f : 1.2f);
+        g.drawRect(box, isActive ? 2 : 1);
         g.setColour(isActive ? juce::Colours::white : theme.ink);
         g.setFont(juce::Font(14.0f, juce::Font::bold));
         g.drawText(proc.groups[static_cast<size_t>(i)].name, box, juce::Justification::centred);
@@ -236,16 +240,17 @@ void AtelierAudioProcessorEditor::drawMixPage(juce::Graphics& g, juce::Rectangle
         g.setColour(theme.panel.withAlpha(0.9f));
         g.fillRect(box);
         g.setColour(theme.ink);
-        g.drawRect(box.toFloat(), 1.5f);
+        g.drawRect(box, 2);
 
         auto inner = box.reduced(10);
         g.setFont(juce::Font(13.0f, juce::Font::bold));
         g.drawText("MIC / SPKR " + juce::String(i + 1), inner.removeFromTop(24), juce::Justification::centredLeft);
 
         auto faderTrack = inner.removeFromTop(28).reduced(4, 6);
-        g.drawRect(faderTrack.toFloat(), 1.0f);
+        g.drawRect(faderTrack, 1);
         const float normVol = juce::jlimit(0.0f, 1.0f, (proc.mics[static_cast<size_t>(i)].volumeDb + 24.0f) / 36.0f);
-        auto fillR = faderTrack.withWidth(static_cast<int>(static_cast<float>(faderTrack.getWidth()) * normVol));
+        const int fillW = static_cast<int>(static_cast<float>(faderTrack.getWidth()) * normVol);
+        auto fillR = faderTrack.withWidth(fillW);
         g.setColour(theme.accent);
         g.fillRect(fillR);
 
@@ -279,7 +284,7 @@ void AtelierAudioProcessorEditor::drawSourcePage(juce::Graphics& g, juce::Rectan
     g.setColour(proc.engineDsp.isLinkMode() ? theme.accent : theme.panel);
     g.fillRect(linkGroupsButtonBounds);
     g.setColour(proc.engineDsp.isLinkMode() ? juce::Colours::white : theme.ink);
-    g.drawRect(linkGroupsButtonBounds.toFloat(), 1.2f);
+    g.drawRect(linkGroupsButtonBounds, 1);
     g.drawText(proc.engineDsp.isLinkMode() ? "LINK: ON" : "LINK: OFF", linkGroupsButtonBounds, juce::Justification::centred);
 
     area.removeFromTop(6);
@@ -295,7 +300,7 @@ void AtelierAudioProcessorEditor::drawSourcePage(juce::Graphics& g, juce::Rectan
         g.setColour(isSel ? theme.accent : theme.panel);
         g.fillRect(box);
         g.setColour(theme.ink);
-        g.drawRect(box.toFloat(), 1.1f);
+        g.drawRect(box, 1);
         g.setColour(isSel ? juce::Colours::white : theme.ink);
         g.setFont(juce::Font(9.5f, juce::Font::bold));
         g.drawText("G" + juce::String(i + 1) + " " + proc.groups[static_cast<size_t>(i)].name,
@@ -326,7 +331,7 @@ void AtelierAudioProcessorEditor::drawSourcePage(juce::Graphics& g, juce::Rectan
         g.setColour(isFake ? theme.accent : theme.panel);
         g.fillRect(mb);
         g.setColour(isFake ? juce::Colours::white : theme.ink);
-        g.drawRect(mb.toFloat(), 1.1f);
+        g.drawRect(mb, 1);
         g.setFont(juce::Font(9.5f, juce::Font::bold));
         g.drawText("M" + juce::String(m + 1) + (isFake ? " FAKE" : " REAL"), mb, juce::Justification::centred);
     }
@@ -342,28 +347,30 @@ void AtelierAudioProcessorEditor::drawSourcePage(juce::Graphics& g, juce::Rectan
     g.fillRect(waveBox);
     g.fillRect(adsrAreaBounds);
     g.setColour(theme.ink);
-    g.drawRect(waveBox.toFloat(), 1.2f);
-    g.drawRect(adsrAreaBounds.toFloat(), 1.2f);
+    g.drawRect(waveBox, 1);
+    g.drawRect(adsrAreaBounds, 1);
     g.drawText("WAVE + LOOP XFADE", waveBox.reduced(6), juce::Justification::topLeft);
 
     const int ax = adsrAreaBounds.getX() + 12;
     const int ay = adsrAreaBounds.getBottom() - 16;
     const int aw = adsrAreaBounds.getWidth() - 24;
     const int ah = adsrAreaBounds.getHeight() - 28;
-    const int pAtkX = ax + static_cast<int>(adsrAttackPt * static_cast<float>(aw) * 0.4f);
-    const int pAtkY = ay - ah;
-    const int pRelX = ax + static_cast<int>(static_cast<float>(aw) * (0.5f + adsrReleasePt * 0.45f));
-    const int pRelY = ay;
+    const float awf = static_cast<float>(aw);
+    const float ahf = static_cast<float>(ah);
+    const float pAtkX = static_cast<float>(ax) + adsrAttackPt * awf * 0.4f;
+    const float pAtkY = static_cast<float>(ay) - ahf;
+    const float pRelX = static_cast<float>(ax) + awf * (0.5f + adsrReleasePt * 0.45f);
+    const float pRelY = static_cast<float>(ay);
 
     juce::Path envPath;
     envPath.startNewSubPath(static_cast<float>(ax), static_cast<float>(ay));
-    envPath.lineTo(static_cast<float>(pAtkX), static_cast<float>(pAtkY));
-    envPath.lineTo(static_cast<float>(pRelX), static_cast<float>(ay - static_cast<int>(static_cast<float>(ah) * 0.7f)));
-    envPath.lineTo(static_cast<float>(pRelX), static_cast<float>(pRelY));
+    envPath.lineTo(pAtkX, pAtkY);
+    envPath.lineTo(pRelX, static_cast<float>(ay) - ahf * 0.7f);
+    envPath.lineTo(pRelX, pRelY);
     g.setColour(theme.accent);
     g.strokePath(envPath, juce::PathStrokeType(2.0f));
-    g.fillEllipse(static_cast<float>(pAtkX - 5), static_cast<float>(pAtkY - 5), 10.0f, 10.0f);
-    g.fillEllipse(static_cast<float>(pRelX - 5), static_cast<float>(pRelY - 5), 10.0f, 10.0f);
+    g.fillEllipse(pAtkX - 5.0f, pAtkY - 5.0f, 10.0f, 10.0f);
+    g.fillEllipse(pRelX - 5.0f, pRelY - 5.0f, 10.0f, 10.0f);
 
     area.removeFromTop(8);
 
@@ -371,7 +378,7 @@ void AtelierAudioProcessorEditor::drawSourcePage(juce::Graphics& g, juce::Rectan
     g.setColour(theme.panel.withAlpha(0.85f));
     g.fillRect(keymapAreaBounds);
     g.setColour(theme.ink);
-    g.drawRect(keymapAreaBounds.toFloat(), 1.2f);
+    g.drawRect(keymapAreaBounds, 1);
     g.drawText("KEYMAP RANGE: Note " + juce::String(keymapLowNote) + " - " + juce::String(keymapHighNote) + " (Drag)",
                keymapAreaBounds.reduced(8), juce::Justification::centred);
 }
@@ -410,7 +417,7 @@ void AtelierAudioProcessorEditor::drawEffectsPage(juce::Graphics& g, juce::Recta
         g.setColour(theme.panel.withAlpha(0.88f));
         g.fillRect(box);
         g.setColour(theme.ink);
-        g.drawRect(box.toFloat(), 1.2f);
+        g.drawRect(box, 1);
         g.setFont(juce::Font(11.0f, juce::Font::bold));
         g.drawText(fxList[static_cast<size_t>(i)].title, box.reduced(8, 4), juce::Justification::topLeft);
         g.drawText(fxList[static_cast<size_t>(i)].readout, box.reduced(8, 4), juce::Justification::topRight);
@@ -418,7 +425,7 @@ void AtelierAudioProcessorEditor::drawEffectsPage(juce::Graphics& g, juce::Recta
         auto graph = box.reduced(10, 22);
         g.setColour(theme.accent);
         g.drawLine(static_cast<float>(graph.getX()), static_cast<float>(graph.getCentreY()),
-                   static_cast<float>(graph.getRight()), static_cast<float>(graph.getCentreY() - (i % 2 == 0 ? 4 : -4)), 1.8f);
+                   static_cast<float>(graph.getRight()), static_cast<float>(graph.getCentreY()) - (i % 2 == 0 ? 4.0f : -4.0f), 1.8f);
     }
 }
 
@@ -453,7 +460,7 @@ void AtelierAudioProcessorEditor::drawN6SettingsDrawer(juce::Graphics& g, juce::
     g.setColour(theme.panel);
     g.fillRect(area);
     g.setColour(theme.ink);
-    g.drawRect(area.toFloat(), 2.0f);
+    g.drawRect(area, 2);
 
     auto inner = area.reduced(16);
     g.setFont(juce::Font(15.0f, juce::Font::bold));
@@ -463,7 +470,8 @@ void AtelierAudioProcessorEditor::drawN6SettingsDrawer(juce::Graphics& g, juce::
     g.setFont(juce::Font(12.0f));
     g.drawText("Active Theme (" + juce::String(proc.activeThemeIndex + 1) + "/10): " + curTheme.name,
                inner.removeFromTop(24), juce::Justification::centredLeft);
-    g.drawText("UI Scale: " + juce::String(static_cast<int>(proc.uiScaleFactor * 100.0f)) + "% | Extended Canvas: "
+    const int scalePct = static_cast<int>(proc.uiScaleFactor * 100.0f);
+    g.drawText("UI Scale: " + juce::String(scalePct) + "% | Extended Canvas: "
                + (proc.extendedCanvas ? "ON" : "OFF"),
                inner.removeFromTop(24), juce::Justification::centredLeft);
     g.drawText("SOURCE Access: " + juce::String(proc.sourceUnlocked ? "UNLOCKED" : "LOCKED")
