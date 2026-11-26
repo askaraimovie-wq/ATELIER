@@ -27,8 +27,8 @@ jobs:
       - name: Configure CMake
         run: cmake -B build -A x64
 
-      - name: Build VST3 and Standalone (Release)
-        run: cmake --build build --config Release --target ATELIER_VST3 ATELIER_Standalone
+      - name: Build VST3 (Release)
+        run: cmake --build build --config Release --target ATELIER_VST3
 
       - name: Rename VST3 with Version Tag
         shell: pwsh
