@@ -1,4 +1,6 @@
 #include "AtelierEditor.h"
+#include <cstdint>
+#include <cmath>
 
 namespace
 {
@@ -11,17 +13,17 @@ namespace
         juce::Colour panel;
     };
 
-    constexpr std::array<AtelierThemePalette, 10> kThemes {{
-        { "Paper Sketch",   juce::Colour(0xFFF6F1E3), juce::Colour(0xFF1A1A1A), juce::Colour(0xFF2B4C7E), juce::Colour(0xFFECE5D3) },
-        { "Vintage Parch",  juce::Colour(0xFFEBDCC0), juce::Colour(0xFF2C1E12), juce::Colour(0xFF8B4513), juce::Colour(0xFFE0CCA9) },
-        { "Blueprint",      juce::Colour(0xFF0E2A47), juce::Colour(0xFFEAF6FF), juce::Colour(0xFF56B4E9), juce::Colour(0xFF153B61) },
-        { "Charcoal Studio",juce::Colour(0xFF191B1E), juce::Colour(0xFFF0F2F5), juce::Colour(0xFFD9822B), juce::Colour(0xFF23272C) },
-        { "Warm Ivory",     juce::Colour(0xFFFAF6EE), juce::Colour(0xFF222222), juce::Colour(0xFF4A7C59), juce::Colour(0xFFF0EAE0) },
-        { "Nocturne Brass", juce::Colour(0xFF16151C), juce::Colour(0xFFF5EFE6), juce::Colour(0xFFC99E48), juce::Colour(0xFF22202B) },
-        { "Slate Acoustic", juce::Colour(0xFF242B33), juce::Colour(0xFFE8EEF2), juce::Colour(0xFF6BA3BE), juce::Colour(0xFF2E3741) },
-        { "Sepia Folio",    juce::Colour(0xFFE4D5BC), juce::Colour(0xFF2B2118), juce::Colour(0xFF7A3E2E), juce::Colour(0xFFD7C5A8) },
-        { "Nordic Frost",   juce::Colour(0xFFF1F5F8), juce::Colour(0xFF1C242B), juce::Colour(0xFF2E6F95), juce::Colour(0xFFE3EBF1) },
-        { "Modern Obsidian",juce::Colour(0xFF121214), juce::Colour(0xFFFAFAFC), juce::Colour(0xFF9B5DE5), juce::Colour(0xFF1C1C21) }
+    const std::array<AtelierThemePalette, 10> kThemes {{
+        { "Paper Sketch",    juce::Colour(static_cast<uint32_t>(0xFFF6F1E3u)), juce::Colour(static_cast<uint32_t>(0xFF1A1A1Au)), juce::Colour(static_cast<uint32_t>(0xFF2B4C7Eu)), juce::Colour(static_cast<uint32_t>(0xFFECE5D3u)) },
+        { "Vintage Parch",   juce::Colour(static_cast<uint32_t>(0xFFEBDCC0u)), juce::Colour(static_cast<uint32_t>(0xFF2C1E12u)), juce::Colour(static_cast<uint32_t>(0xFF8B4513u)), juce::Colour(static_cast<uint32_t>(0xFFE0CCA9u)) },
+        { "Blueprint",       juce::Colour(static_cast<uint32_t>(0xFF0E2A47u)), juce::Colour(static_cast<uint32_t>(0xFFEAF6FFu)), juce::Colour(static_cast<uint32_t>(0xFF56B4E9u)), juce::Colour(static_cast<uint32_t>(0xFF153B61u)) },
+        { "Charcoal Studio", juce::Colour(static_cast<uint32_t>(0xFF191B1Eu)), juce::Colour(static_cast<uint32_t>(0xFFF0F2F5u)), juce::Colour(static_cast<uint32_t>(0xFFD9822Bu)), juce::Colour(static_cast<uint32_t>(0xFF23272Cu)) },
+        { "Warm Ivory",      juce::Colour(static_cast<uint32_t>(0xFFFAF6EEu)), juce::Colour(static_cast<uint32_t>(0xFF222222u)), juce::Colour(static_cast<uint32_t>(0xFF4A7C59u)), juce::Colour(static_cast<uint32_t>(0xFFF0EAE0u)) },
+        { "Nocturne Brass",  juce::Colour(static_cast<uint32_t>(0xFF16151Cu)), juce::Colour(static_cast<uint32_t>(0xFFF5EFE6u)), juce::Colour(static_cast<uint32_t>(0xFFC99E48u)), juce::Colour(static_cast<uint32_t>(0xFF22202Bu)) },
+        { "Slate Acoustic",  juce::Colour(static_cast<uint32_t>(0xFF242B33u)), juce::Colour(static_cast<uint32_t>(0xFFE8EEF2u)), juce::Colour(static_cast<uint32_t>(0xFF6BA3BEu)), juce::Colour(static_cast<uint32_t>(0xFF2E3741u)) },
+        { "Sepia Folio",     juce::Colour(static_cast<uint32_t>(0xFFE4D5BCu)), juce::Colour(static_cast<uint32_t>(0xFF2B2118u)), juce::Colour(static_cast<uint32_t>(0xFF7A3E2Eu)), juce::Colour(static_cast<uint32_t>(0xFFD7C5A8u)) },
+        { "Nordic Frost",    juce::Colour(static_cast<uint32_t>(0xFFF1F5F8u)), juce::Colour(static_cast<uint32_t>(0xFF1C242Bu)), juce::Colour(static_cast<uint32_t>(0xFF2E6F95u)), juce::Colour(static_cast<uint32_t>(0xFFE3EBF1u)) },
+        { "Modern Obsidian", juce::Colour(static_cast<uint32_t>(0xFF121214u)), juce::Colour(static_cast<uint32_t>(0xFFFAFAFCu)), juce::Colour(static_cast<uint32_t>(0xFF9B5DE5u)), juce::Colour(static_cast<uint32_t>(0xFF1C1C21u)) }
     }};
 }
 
@@ -88,7 +90,7 @@ void AtelierAudioProcessorEditor::drawBackgroundSketch(juce::Graphics& g, juce::
     for (int p = -4; p <= 4; ++p)
     {
         const float px = cx + static_cast<float>(p) * 44.0f;
-        const float py = cy - 45.0f + std::abs(p) * 6.0f;
+        const float py = cy - 45.0f + static_cast<float>(std::abs(p)) * 6.0f;
         g.drawEllipse(px - 6.0f, py - 18.0f, 12.0f, 12.0f, 1.1f);
         g.drawLine(px, py - 6.0f, px, py + 14.0f, 1.1f);
         g.drawLine(px - 10.0f, py + 2.0f, px + 14.0f, py - 4.0f, 1.0f);
@@ -243,7 +245,7 @@ void AtelierAudioProcessorEditor::drawMixPage(juce::Graphics& g, juce::Rectangle
         auto faderTrack = inner.removeFromTop(28).reduced(4, 6);
         g.drawRect(faderTrack.toFloat(), 1.0f);
         const float normVol = juce::jlimit(0.0f, 1.0f, (proc.mics[static_cast<size_t>(i)].volumeDb + 24.0f) / 36.0f);
-        auto fillR = faderTrack.withWidth(static_cast<int>(faderTrack.getWidth() * normVol));
+        auto fillR = faderTrack.withWidth(static_cast<int>(static_cast<float>(faderTrack.getWidth()) * normVol));
         g.setColour(theme.accent);
         g.fillRect(fillR);
 
@@ -348,15 +350,15 @@ void AtelierAudioProcessorEditor::drawSourcePage(juce::Graphics& g, juce::Rectan
     const int ay = adsrAreaBounds.getBottom() - 16;
     const int aw = adsrAreaBounds.getWidth() - 24;
     const int ah = adsrAreaBounds.getHeight() - 28;
-    const int pAtkX = ax + static_cast<int>(adsrAttackPt * aw * 0.4f);
+    const int pAtkX = ax + static_cast<int>(adsrAttackPt * static_cast<float>(aw) * 0.4f);
     const int pAtkY = ay - ah;
-    const int pRelX = ax + static_cast<int>(aw * (0.5f + adsrReleasePt * 0.45f));
+    const int pRelX = ax + static_cast<int>(static_cast<float>(aw) * (0.5f + adsrReleasePt * 0.45f));
     const int pRelY = ay;
 
     juce::Path envPath;
     envPath.startNewSubPath(static_cast<float>(ax), static_cast<float>(ay));
     envPath.lineTo(static_cast<float>(pAtkX), static_cast<float>(pAtkY));
-    envPath.lineTo(static_cast<float>(pRelX), static_cast<float>(ay - static_cast<int>(ah * 0.7f)));
+    envPath.lineTo(static_cast<float>(pRelX), static_cast<float>(ay - static_cast<int>(static_cast<float>(ah) * 0.7f)));
     envPath.lineTo(static_cast<float>(pRelX), static_cast<float>(pRelY));
     g.setColour(theme.accent);
     g.strokePath(envPath, juce::PathStrokeType(2.0f));
@@ -431,7 +433,7 @@ void AtelierAudioProcessorEditor::drawKeyboardAndVersion(juce::Graphics& g, juce
 
     for (int k = 0; k < numWhiteKeys; ++k)
     {
-        juce::Rectangle<float> wk(static_cast<float>(kbArea.getX()) + k * wkW,
+        juce::Rectangle<float> wk(static_cast<float>(kbArea.getX()) + static_cast<float>(k) * wkW,
                                   static_cast<float>(kbArea.getY()),
                                   wkW, static_cast<float>(kbArea.getHeight()));
         g.setColour(juce::Colours::white);
