@@ -3,12 +3,12 @@
 
 void AtelierEngineDsp::prepare(double sampleRate, int samplesPerBlock)
 {
-    juce::ignoreUnused(samplesPerBlock);
     currentSampleRate = sampleRate > 0.0 ? sampleRate : 44100.0;
-    reverb.setSampleRate(currentSampleRate);
+    const auto blockSize = static_cast<juce::uint32>(juce::jmax(1, samplesPerBlock));
 
-    juce::dsp::ProcessSpec spec { currentSampleRate, static_cast<juce::uint32>(juce::jmax(1, samplesPerBlock)), 2 };
+    juce::dsp::ProcessSpec spec { currentSampleRate, blockSize, 2 };
     toneFilter.prepare(spec);
+    reverb.prepare(spec);
 }
 
 void AtelierEngineDsp::setActiveGroup(int groupIndex, bool newLinkMode)
@@ -79,7 +79,6 @@ void AtelierEngineDsp::processBlock(juce::AudioBuffer<float>& buffer,
             buffer.setSample(ch, i, sample);
     }
 
-    // Apply 4-Mic Mix levels + Fake Mic ambience/width
     bool anySolo = false;
     for (const auto& m : mics)
         if (m.solo) anySolo = true;
@@ -96,7 +95,6 @@ void AtelierEngineDsp::processBlock(juce::AudioBuffer<float>& buffer,
     }
     micSumGain = juce::jlimit(0.0f, 4.0f, micSumGain * 0.25f);
 
-    // Apply EQ / Saturation / Filter / Reverb
     const float clampedCutoff = juce::jlimit(80.0f, static_cast<float>(currentSampleRate * 0.45), fx.filterCutoffHz);
     *toneFilter.coefficients = *juce::dsp::IIR::Coefficients<float>::makeLowPass(currentSampleRate, clampedCutoff);
 
@@ -125,9 +123,5 @@ void AtelierEngineDsp::processBlock(juce::AudioBuffer<float>& buffer,
     revParams.dryLevel = 1.0f;
     revParams.roomSize = 0.55f;
     reverb.setParameters(revParams);
-
-    if (numCh >= 2)
-        reverb.processStereo(buffer.getWritePointer(0), buffer.getWritePointer(1), numSamples);
-    else
-        reverb.processMono(buffer.getWritePointer(0), numSamples);
+    reverb.process(ctx);
 }
