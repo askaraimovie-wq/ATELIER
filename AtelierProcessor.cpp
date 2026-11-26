@@ -103,7 +103,8 @@ void AtelierAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
     state->setProperty("groupNames", gNames);
 
     const juce::String text = juce::JSON::toString(juce::var(state));
-    destData.replaceAll(text.toUTF8(), text.getNumBytesAsGNUStrLength());
+    const auto utf8 = text.toUTF8();
+    destData.replaceAll(utf8.getAddress(), text.getNumBytesAsUTF8());
 }
 
 void AtelierAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
